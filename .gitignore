@@ -1,0 +1,49 @@
+# ==========================
+# 📦 Dependencias y builds
+# ==========================
+node_modules/
+dist/
+build/
+coverage/
+
+# ==========================
+# ⚙️ Archivos del entorno
+# ==========================
+.env
+.env.local
+.env.*.local
+.env.backup
+*.env
+
+# ==========================
+# 🧰 Logs y errores
+# ==========================
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+# ==========================
+# 🧠 Archivos del sistema
+# ==========================
+.DS_Store
+Thumbs.db
+
+# ==========================
+# 💻 Configuración del editor
+# ==========================
+.vscode/
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+
+# ==========================
+# 🚀 Extras opcionales
+# ==========================
+/tmp
+/.cache
