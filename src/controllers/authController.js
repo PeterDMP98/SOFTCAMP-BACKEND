@@ -27,7 +27,7 @@ export const register = async (req, res) => {
     // Insertar usuario
     const result = await pool.query(
       `INSERT INTO usuario (nombre, correo, telefono, direccion, contrasena, id_rol)
-       VALUES ($1, $2, $3, $4, $5, $6) RETURNING id_usuario, nombre, correo`,
+      VALUES ($1, $2, $3, $4, $5, $6) RETURNING id_usuario, nombre, correo`,
       [nombre, correo, telefono, direccion, hashedPassword, id_rol]
     );
 
