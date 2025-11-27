@@ -1,21 +1,81 @@
-import bcrypt from 'bcrypt';
-import { pool } from '../db.js';
+import { UsuarioModel } from "../models/usuarioModel.js";
+import pool from "../config/db.js";
 
-export const registrarUsuario = async (req, res) => {
+
+// ============================
+// ✅ Crear usuario (ADMIN o sistema)
+// ============================
+export const createUser = async (req, res) => {
   try {
-    const { nombre, correo, telefono, direccion, contrasena } = req.body;
+    const { nombre, correo, telefono, direccion, password, id_rol } = req.body;
 
-    const hashedPassword = await bcrypt.hash(contrasena, 10);
-    const query = `
-      INSERT INTO usuario (nombre, correo, telefono, direccion, contrasena)
-      VALUES ($1, $2, $3, $4, $5) RETURNING idusuario, nombre, correo;
-    `;
+    if (!nombre || !correo || !telefono || !password || !id_rol) {
+      return res.status(400).json({ message: "Faltan datos obligatorios" });
+    }
 
-    const result = await pool.query(query, [nombre, correo, telefono, direccion, hashedPassword]);
-    res.status(201).json({ success: true, usuario: result.rows[0] });
+    const existing = await UsuarioModel.getByEmail(correo);
+    if (existing) {
+      return res.status(400).json({ message: "El correo ya está registrado" });
+    }
+
+    const newUser = await UsuarioModel.create({
+      nombre,
+      correo,
+      telefono,
+      direccion,
+      password,
+      id_rol
+    });
+
+    return res.json({
+      message: "Usuario creado correctamente",
+      usuario: newUser
+    });
 
   } catch (error) {
-    console.error('Error al registrar usuario:', error.message);
-    res.status(500).json({ success: false, message: 'Error en el servidor' });
+    console.error("❌ Error al crear usuario:", error);
+    return res.status(500).json({ message: "Error interno del servidor" });
+  }
+};
+
+// ============================
+// ✅ Obtener usuario por correo
+// ============================
+export const getUsuarioByEmail = async (req, res) => {
+  try {
+    const { correo } = req.params;
+
+    const user = await UsuarioModel.getByEmail(correo);
+    if (!user) {
+      return res.status(404).json({ message: "Usuario no encontrado" });
+    }
+
+    return res.json(user);
+
+  } catch (error) {
+    console.error("❌ Error obteniendo usuario:", error);
+    return res.status(500).json({ message: "Error interno del servidor" });
+  }
+};
+
+// ============================
+// ✅ Eliminar usuario
+// ============================
+export const deleteUser = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const query = `DELETE FROM usuario WHERE id_usuario = $1 RETURNING id_usuario`;
+    const result = await pool.query(query, [id]);
+
+    if (!result.rows.length) {
+      return res.status(404).json({ message: "Usuario no encontrado" });
+    }
+
+    return res.json({ message: "Usuario eliminado correctamente" });
+
+  } catch (error) {
+    console.error("❌ Error al eliminar usuario:", error);
+    return res.status(500).json({ message: "Error interno del servidor" });
   }
 };

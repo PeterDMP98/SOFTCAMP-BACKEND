@@ -1,16 +1,19 @@
-// backend/src/routes/usuarioRoutes.js
-import { Router } from 'express';
-import { registerUser } from '../controllers/registerController.js';
-import { loginUser } from '../controllers/loginController.js';
-
-
+import { Router } from "express";
+import {
+  createUser,
+  getUsuarioByEmail,
+  deleteUser
+} from "../controllers/usuarioController.js";
 
 const router = Router();
 
-// Ruta para registrar
-router.post('/register', registerUser);
+// Crear usuario (admin o sistema)
+router.post("/", createUser);
 
-// Ruta para login
-router.post('/login', loginUser);
+// Obtener usuario por correo
+router.get("/:correo", getUsuarioByEmail);
+
+// Eliminar usuario por ID
+router.delete("/:id", deleteUser);
 
 export default router;
