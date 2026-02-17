@@ -3,9 +3,10 @@ import pool from "../config/db.js";
 
 
 // ============================
-// ✅ Crear usuario (ADMIN o sistema)
+// ✅ Crear usuario 
 // ============================
 export const createUser = async (req, res) => {
+
   try {
     const { nombre, correo, telefono, direccion, password, id_rol } = req.body;
 
@@ -65,14 +66,13 @@ export const deleteUser = async (req, res) => {
   try {
     const { id } = req.params;
 
-    const query = `DELETE FROM usuario WHERE id_usuario = $1 RETURNING id_usuario`;
-    const result = await pool.query(query, [id]);
+    const userDelete = await UsuarioModel.deleteUserById(id);
 
-    if (!result.rows.length) {
+    if (!userDelete.rows.length) {
       return res.status(404).json({ message: "Usuario no encontrado" });
     }
 
-    return res.json({ message: "Usuario eliminado correctamente" });
+    return res.json({ message: "Usuario eliminado correctamente", usuario: userDelete.rows[0] });
 
   } catch (error) {
     console.error("❌ Error al eliminar usuario:", error);

@@ -25,13 +25,19 @@ export const GanadoModel = {
   },
 
   async getById(id_ganado) {
-  const result = await pool.query(
-    `SELECT * FROM ganado WHERE id_ganado = $1`,
-    [id_ganado]
-  );
+    const result = await pool.query(
+      `SELECT * FROM ganado WHERE id_ganado = $1SELECT 
+  g.*,
+  l.nombre AS nombre_lote
+FROM ganado g
+LEFT JOIN lotes l ON g.id_lote = l.id_lote
+WHERE g.id_ganado = $1
+`,
+      [id_ganado]
+    );
 
-  return result.rows[0];
-},
+    return result.rows[0];
+  },
 
 
   // Crear registro de ganado
@@ -40,7 +46,6 @@ export const GanadoModel = {
       INSERT INTO ganado (
         nombre_animal,
         numero_identificacion,
-        fecha_de_ingreso,
         fecha_nacimiento,
         raza,
         sexo,
@@ -54,13 +59,12 @@ export const GanadoModel = {
         precio,
         id_usuario
       )
-      VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15)
+      VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14)
       RETURNING *
     `;
     const values = [
       data.nombre_animal,
       data.numero_identificacion || null,
-      data.fecha_de_ingreso,
       data.fecha_nacimiento || null,
       data.raza || null,
       data.sexo,
@@ -85,25 +89,23 @@ export const GanadoModel = {
       UPDATE ganado SET
         nombre_animal=$1,
         numero_identificacion=$2,
-        fecha_de_ingreso=$3,
-        fecha_nacimiento=$4,
-        raza=$5,
-        sexo=$6,
-        peso_actual=$7,
-        estado_salud=$8,
-        estado_reproductivo=$9,
-        fecha_gestacion=$10,
-        detalle=$11,
-        subproducto=$12,
-        id_lote=$13,
-        precio=$14
-      WHERE id_ganado=$15 AND id_usuario=$16
+        fecha_nacimiento=$3,
+        raza=$4,
+        sexo=$5,
+        peso_actual=$6,
+        estado_salud=$7,
+        estado_reproductivo=$8,
+        fecha_gestacion=$9,
+        detalle=$10,
+        subproducto=$11,
+        id_lote=$12,
+        precio=$13
+      WHERE id_ganado=$14 AND id_usuario=$15
       RETURNING *
     `;
     const values = [
       data.nombre_animal,
       data.numero_identificacion || null,
-      data.fecha_de_ingreso,
       data.fecha_nacimiento || null,
       data.raza || null,
       data.sexo,

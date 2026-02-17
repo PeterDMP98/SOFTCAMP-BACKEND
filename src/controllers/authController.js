@@ -69,9 +69,11 @@ export const register = async (req, res) => {
 // ✅ LOGIN DE USUARIO
 // ============================
 export const login = async (req, res) => {
+
+  
   try {
     const { correo, password } = req.body;
-
+    
     if (!correo || !password) {
       return res.status(400).json({ message: "Correo y contraseña son obligatorios" });
     }
@@ -82,6 +84,7 @@ export const login = async (req, res) => {
     }
 
     const validPassword = await bcrypt.compare(password, user.contrasena);
+    
     if (!validPassword) {
       return res.status(401).json({ message: "Contraseña incorrecta" });
     }
@@ -112,6 +115,7 @@ export const login = async (req, res) => {
     });
 
   } catch (error) {
+    
     console.error("❌ Error en login:", error);
     return res.status(500).json({ message: "Error interno en el servidor" });
   }

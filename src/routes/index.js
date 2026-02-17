@@ -3,7 +3,7 @@ import usuarioRoutes from "./usuarioRoutes.js";
 import ganadoRoutes from "./ganadoRoutes.js";
 import rolesRoutes from "./rolesRoutes.js";
 
-export default function registerRoutes(app) {
+export default function allRoutes(app) {
   
   // Autenticación
   app.use("/api/auth", authRoutes);

@@ -10,11 +10,10 @@ export const UsuarioModel = {
         u.id_usuario,
         u.nombre,
         u.correo,
+        u.contrasena,
         u.telefono,
         u.direccion,
-        u.contrasena,
         u.estado,
-        u.fecha_registro,
         r.id_rol,
         r.nombre AS rol,
         rg.id_grupo,
@@ -78,3 +77,12 @@ export const UsuarioModel = {
     return result.rows[0];
   }
 };
+
+// Eliminar usuario por ID
+
+export const deleteById = async (id) => {
+  
+  const query = `DELETE FROM usuario WHERE id_usuario = $1 RETURNING id_usuario`;
+  const result = await pool.query(query, [id]);
+  return result.rows[0] || null;
+}
