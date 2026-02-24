@@ -9,6 +9,15 @@ export const getLotes = async (req, res) => {
 	}
 };
 
+export const getInactiveLotes = async (req, res) => {
+	try {
+		const lotes = await LoteModel.getInactiveByUser(req.user.id_usuario);
+		res.json({ data: lotes });
+	} catch (e) {
+		res.status(500).json({ error: "Error al obtener los lotes" });
+	}
+};
+
 export const getLoteById = async (req, res) => {
 	try {
 		const lote = await LoteModel.getById(
@@ -68,5 +77,27 @@ export const deactivateLote = async (req, res) => {
 		res.json({ message: "Lote dasactivado correctamente" });
 	} catch (e) {
 		res.status(500).json({ error: "Error al desactivar el lote" });
+	}
+};
+
+export const reactivateLote = async (req, res) => {
+	try {
+		const { id } = req.params;
+		const id_usuario = req.user.id_usuario;
+
+		const lote = await LoteModel.reactivate(id, id_usuario);
+
+		if (!lote) {
+			return res.status(404).json({ message: "Lote no encontrado" });
+		}
+
+		return res.json({
+			message: "Lote reactivado correctamente",
+			lote
+		});
+
+	} catch (error) {
+		console.error("❌ Error reactivando lote:", error);
+		return res.status(500).json({ message: "Error interno del servidor" });
 	}
 };

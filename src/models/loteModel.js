@@ -16,8 +16,17 @@ export const LoteModel = {
 			[id_lote, id_usuario]
 		);
 		return rows[0];
-	}
-	,
+	},
+
+	async getInactiveByUser(id_usuario) {
+		const { rows } = await pool.query(
+			`SELECT * FROM lotes
+    WHERE id_usuario = $1 AND activo = false
+    ORDER BY fecha_registro DESC`,
+			[id_usuario]
+		);
+		return rows;
+	},
 
 	async create(data, id_usuario) {
 		const { nombre, tamano_hectareas, descripcion } = data;
@@ -66,6 +75,19 @@ export const LoteModel = {
 			[id_lote, id_usuario]
 		);
 		return rows[0];
+	},
+
+	async reactivate(id_lote, id_usuario) {
+		const { rows } = await pool.query(
+			`UPDATE lotes
+    SET activo = true
+    WHERE id_lote = $1 AND id_usuario = $2
+     RETURNING *`,
+			[id_lote, id_usuario]
+		);
+		return rows[0];
 	}
+
+
 
 };

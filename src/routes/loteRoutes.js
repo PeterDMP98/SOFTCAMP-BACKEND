@@ -1,5 +1,5 @@
 import express from 'express';
-import { createLote, getLotes, getLoteById, updateLote, updateIdle, deactivateLote } from '../controllers/loteController.js';
+import { createLote, getLotes, getLoteById, updateLote, updateIdle, deactivateLote, reactivateLote, getInactiveLotes } from '../controllers/loteController.js';
 import { auth } from '../middleware/authMiddleware.js';
 
 const router = express.Router();
@@ -14,4 +14,5 @@ router.get('/:id', getLoteById);
 router.post('/', createLote);
 router.put('/:id', updateLote);
 router.delete('/:id', deactivateLote);
-
+router.put('/:id/reactivar', reactivateLote);
+router.get('/inactivos', getInactiveLotes);
