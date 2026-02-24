@@ -9,5 +9,5 @@ router.use(auth);
 router.get('/ganado/:id', getReproduccionByGanado);
 router.get('/:id', getReproduccionById);
 router.post('/', createReproduccion);
-router.put('/:id', deactivateReproduccion);
+router.put('/:id', updateReproduccion);
 

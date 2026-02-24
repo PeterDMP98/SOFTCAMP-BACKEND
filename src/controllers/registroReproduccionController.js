@@ -48,30 +48,31 @@ export const getReproduccionById = async (req, res) => {
 export const createReproduccion = async (req, res) => {
   try {
     const id_usuario = req.user.id_usuario;
-    const { id_madre, id_padre } = req.body;
-    const { tipo_evento } = req.body;
+    const { id_madre, id_padre, tipo_servicio, detalles } = req.body;
 
-    const validos = ['Servicio', 'Parto', 'Aborto', 'Otros'];
-    if (!validos.includes(tipo_evento)) {
-      return res.status(400).json({ message: "Tipo de evento inválido" });
-    }
-
-    const madre = id_madre ? await GanadoModel.getById(id_madre) : null;
-    const padre = id_padre ? await GanadoModel.getById(id_padre) : null;
-
+    const madre = await GanadoModel.getById(id_madre);
     if (!madre || madre.sexo !== 'Hembra') {
-      return res.status(400).json({ message: "El ganado madre debe ser hembra" });
-    }
-
-    if (padre && padre.sexo !== 'Macho') {
-      return res.status(400).json({ message: "El ganado padre debe ser macho" });
+      return res.status(400).json({ message: "La madre debe ser hembra" });
     }
 
     if (madre.id_usuario !== id_usuario) {
       return res.status(403).json({ message: "No autorizado" });
     }
 
-    const nuevo = await RegistroReproduccionModel.create(req.body);
+    if (id_padre) {
+      const padre = await GanadoModel.getById(id_padre);
+      if (!padre || padre.sexo !== 'Macho') {
+        return res.status(400).json({ message: "El padre debe ser macho" });
+      }
+    }
+
+    const nuevo = await RegistroReproduccionModel.create({
+      id_madre,
+      id_padre,
+      tipo_servicio,
+      detalles
+    });
+
     res.status(201).json({ data: nuevo });
 
   } catch (error) {
@@ -79,25 +80,30 @@ export const createReproduccion = async (req, res) => {
   }
 };
 
+const ESTADOS_FINALES = [
+  'PARTO_EXITOSO',
+  'SERVICIO_FALLIDO',
+  'ABORTO',
+  'FETO_MUERTO',
+  'DIAGNOSTICO_NEGATIVO',
+  'ERROR_REGISTRO',
+  'DUPLICADO'
+];
+
 export const updateReproduccion = async (req, res) => {
   try {
     const { id } = req.params;
     const id_usuario = req.user.id_usuario;
 
     const registro = await RegistroReproduccionModel.getById(id);
+
     if (!registro || registro.id_usuario !== id_usuario) {
       return res.status(403).json({ message: "No autorizado" });
     }
 
-    const ahora = new Date();
-    const creado = new Date(registro.created_at);
-    const minutosPermitidos = 60;
-
-    const diffMin = (ahora - creado) / 1000 / 60;
-
-    if (diffMin > minutosPermitidos) {
-      return res.status(403).json({
-        message: "Solo se puede editar durante la primera hora"
+    if (ESTADOS_FINALES.includes(registro.estado_reproduccion)) {
+      return res.status(400).json({
+        message: "El registro ya está cerrado y no puede editarse"
       });
     }
 
@@ -105,28 +111,6 @@ export const updateReproduccion = async (req, res) => {
     res.json({ data: actualizado });
 
   } catch (error) {
-    res.status(500).json({ message: "Error actualizando registro reproductivo" });
-  }
-};
-
-export const deactivateReproduccion = async (req, res) => {
-  try {
-    const { id } = req.params;
-    const id_usuario = req.user.id_usuario;
-
-    const registro = await RegistroReproduccionModel.getById(id);
-    if (!registro || registro.id_usuario !== id_usuario) {
-      return res.status(403).json({ message: "No autorizado" });
-    }
-
-    const ok = await RegistroReproduccionModel.deactivate(id);
-    if (!ok) {
-      return res.status(404).json({ message: "Registro no encontrado" });
-    }
-
-    res.json({ message: "Registro reproductivo desactivado" });
-
-  } catch (error) {
-    res.status(500).json({ message: "Error desactivando registro reproductivo" });
+    res.status(500).json({ message: "Error actualizando registro" });
   }
 };

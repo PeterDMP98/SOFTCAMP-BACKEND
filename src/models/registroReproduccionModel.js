@@ -29,24 +29,17 @@ export const RegistroReproduccionModel = {
   },
 
   async create(data) {
-    const {
-      id_hijo,
-      id_madre,
-      id_padre,
-      tipo_evento,
-      detalles
-    } = data;
+    const { id_madre, id_padre, tipo_servicio, detalles } = data;
 
     const { rows } = await pool.query(
       `INSERT INTO registros_reproduccion
-      (id_hijo, id_madre, id_padre, tipo_evento, detalles)
-      VALUES ($1, $2, $3, $4, $5)
-       RETURNING *`,
+    (id_madre, id_padre, tipo_servicio, detalles)
+    VALUES ($1, $2, $3, $4)
+     RETURNING *`,
       [
-        id_hijo || null,
         id_madre,
         id_padre || null,
-        tipo_evento,
+        tipo_servicio,
         detalles || null
       ]
     );
@@ -54,44 +47,42 @@ export const RegistroReproduccionModel = {
     return rows[0];
   },
 
-async update(id_registros_reproduccion, data) {
+async update(id, data) {
   const {
+    estado_reproduccion,
     id_hijo,
-    id_madre,
-    id_padre,
-    tipo_evento,
     detalles
   } = data;
 
+  const esFinal = [
+    'PARTO_EXITOSO',
+    'SERVICIO_FALLIDO',
+    'ABORTO',
+    'FETO_MUERTO',
+    'DIAGNOSTICO_NEGATIVO',
+    'ERROR_REGISTRO',
+    'DUPLICADO'
+  ].includes(estado_reproduccion);
+
   const { rows } = await pool.query(
     `UPDATE registros_reproduccion SET
-      id_hijo = $1,
-      id_madre = $2,
-      id_padre = $3,
-      tipo_evento = $4,
-      detalles = $5
-    WHERE id_registros_reproduccion = $6
+      estado_reproduccion = $1,
+      id_hijo = $2,
+      detalles = $3,
+      updated_at = NOW(),
+      fecha_cierre = CASE WHEN $4 THEN NOW() ELSE fecha_cierre END
+    WHERE id_registros_reproduccion = $5
      RETURNING *`,
     [
+      estado_reproduccion,
       id_hijo || null,
-      id_madre,
-      id_padre || null,
-      tipo_evento,
       detalles || null,
-      id_registros_reproduccion
+      esFinal,
+      id
     ]
   );
 
   return rows[0];
 },
-
-  async deactivate(id_registros_reproduccion) {
-    const { rowCount } = await pool.query(
-      `UPDATE registros_reproduccion SET activo = false
-       WHERE id_registros_reproduccion = $1`,
-      [id_registros_reproduccion]
-    );
-    return rowCount > 0;
-  }
 };
 
