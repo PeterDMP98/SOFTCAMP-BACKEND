@@ -1,25 +1,15 @@
-import { RegistroReproduccionModel } from "../models/registroReproduccionModel.js";
-import { GanadoModel } from "../models/ganadoModel.js";
+import { RegistroReproduccionService } from "../services/registroReproduccionService.js";
+import { validateRegistroReproduccionCreate, validateRegistroReproduccionUpdate } from "../validations/registroReproduccion.validation.js";
 
 export const getReproduccionByGanado = async (req, res) => {
   try {
-    const { id } = req.params; // id_ganado
+    const { id } = req.params;
     const id_usuario = req.user.id_usuario;
-
-    const ganado = await GanadoModel.getById(id);
-    if (!ganado) {
-      return res.status(404).json({ message: "Ganado no encontrado" });
-    }
-
-    if (ganado.id_usuario !== id_usuario) {
-      return res.status(403).json({ message: "No autorizado" });
-    }
-
-    const registros = await RegistroReproduccionModel.getByGanado(id);
-    res.json({ data: registros });
-
+    const registros = await RegistroReproduccionService.getByGanado(id, id_usuario);
+    return res.json({ message: "Registros de reproducción obtenidos correctamente", data: registros });
   } catch (error) {
-    res.status(500).json({ message: "Error obteniendo registros reproductivos" });
+    console.error("Error obteniendo registros de reproducción:", error);
+    return res.status(500).json({ message: error.message || "Error obteniendo registros de reproducción" });
   }
 };
 
@@ -27,90 +17,68 @@ export const getReproduccionById = async (req, res) => {
   try {
     const { id } = req.params;
     const id_usuario = req.user.id_usuario;
-
-    const registro = await RegistroReproduccionModel.getById(id);
-
-    if (!registro) {
-      return res.status(404).json({ message: "Registro no encontrado" });
-    }
-
-    if (registro.id_usuario !== id_usuario) {
-      return res.status(403).json({ message: "No autorizado" });
-    }
-
-    res.json({ data: registro });
-
+    const registro = await RegistroReproduccionService.getById(id, id_usuario);
+    return res.json({ message: "Registro de reproducción obtenido correctamente", data: registro });
   } catch (error) {
-    res.status(500).json({ message: "Error obteniendo registro reproductivo" });
+    console.error("Error obteniendo registro de reproducción:", error);
+    const status = error.message.includes("no encontrado") ? 404 : 500;
+    return res.status(status).json({ message: error.message || "Error obteniendo registro de reproducción" });
   }
 };
 
 export const createReproduccion = async (req, res) => {
   try {
     const id_usuario = req.user.id_usuario;
-    const { id_madre, id_padre, tipo_servicio, detalles } = req.body;
 
-    const madre = await GanadoModel.getById(id_madre);
-    if (!madre || madre.sexo !== 'Hembra') {
-      return res.status(400).json({ message: "La madre debe ser hembra" });
+    const validation = validateRegistroReproduccionCreate(req.body);
+    if (!validation.success) {
+      const errors = validation.error.errors.map((err) => ({
+        field: err.path.join("."),
+        message: err.message
+      }));
+      return res.status(400).json({ message: "Error de validación", errors });
     }
 
-    if (madre.id_usuario !== id_usuario) {
-      return res.status(403).json({ message: "No autorizado" });
-    }
-
-    if (id_padre) {
-      const padre = await GanadoModel.getById(id_padre);
-      if (!padre || padre.sexo !== 'Macho') {
-        return res.status(400).json({ message: "El padre debe ser macho" });
-      }
-    }
-
-    const nuevo = await RegistroReproduccionModel.create({
-      id_madre,
-      id_padre,
-      tipo_servicio,
-      detalles
-    });
-
-    res.status(201).json({ data: nuevo });
-
+    const nuevo = await RegistroReproduccionService.create(validation.data, id_usuario);
+    return res.status(201).json({ message: "Registro de reproducción creado correctamente", data: nuevo });
   } catch (error) {
-    res.status(500).json({ message: "Error creando registro reproductivo" });
+    console.error("Error creando registro de reproducción:", error);
+    return res.status(400).json({ message: error.message || "Error creando registro de reproducción" });
   }
 };
-
-const ESTADOS_FINALES = [
-  'PARTO_EXITOSO',
-  'SERVICIO_FALLIDO',
-  'ABORTO',
-  'FETO_MUERTO',
-  'DIAGNOSTICO_NEGATIVO',
-  'ERROR_REGISTRO',
-  'DUPLICADO'
-];
 
 export const updateReproduccion = async (req, res) => {
   try {
     const { id } = req.params;
     const id_usuario = req.user.id_usuario;
 
-    const registro = await RegistroReproduccionModel.getById(id);
-
-    if (!registro || registro.id_usuario !== id_usuario) {
-      return res.status(403).json({ message: "No autorizado" });
+    const validation = validateRegistroReproduccionUpdate(req.body);
+    if (!validation.success) {
+      const errors = validation.error.errors.map((err) => ({
+        field: err.path.join("."),
+        message: err.message
+      }));
+      return res.status(400).json({ message: "Error de validación", errors });
     }
 
-    if (ESTADOS_FINALES.includes(registro.estado_reproduccion)) {
-      return res.status(400).json({
-        message: "El registro ya está cerrado y no puede editarse"
-      });
-    }
-
-    const actualizado = await RegistroReproduccionModel.update(id, req.body);
-    res.json({ data: actualizado });
-
+    const actualizado = await RegistroReproduccionService.update(id, validation.data, id_usuario);
+    return res.json({ message: "Registro de reproducción actualizado correctamente", data: actualizado });
   } catch (error) {
-    res.status(500).json({ message: "Error actualizando registro" });
+    console.error("Error actualizando registro de reproducción:", error);
+    const status = error.message.includes("no encontrado") ? 404 : 400;
+    return res.status(status).json({ message: error.message || "Error actualizando registro de reproducción" });
+  }
+};
+
+export const deleteReproduccion = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const id_usuario = req.user.id_usuario;
+    const result = await RegistroReproduccionService.delete(id, id_usuario);
+    return res.json({ message: "Registro de reproducción eliminado correctamente" });
+  } catch (error) {
+    console.error("Error eliminando registro de reproducción:", error);
+    const status = error.message.includes("no encontrado") ? 404 : 400;
+    return res.status(status).json({ message: error.message || "Error eliminando registro de reproducción" });
   }
 };

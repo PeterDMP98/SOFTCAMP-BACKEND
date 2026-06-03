@@ -1,21 +1,15 @@
-import { HistorialClinicoModel } from "../models/historialClinico.model.js";
-import { GanadoModel } from "../models/ganadoModel.js";
+import { HistorialClinicoService } from "../services/historialClinicoService.js";
+import { validateHistorialClinicoCreate, validateHistorialClinicoUpdate } from "../validations/historialClinico.validation.js";
 
 export const getHistorialClinicoByGanado = async (req, res) => {
   try {
     const { id } = req.params;
     const id_usuario = req.user.id_usuario;
-
-    const ganado = await GanadoModel.getById(id);
-    if (!ganado || ganado.id_usuario !== id_usuario) {
-      return res.status(403).json({ message: "No autorizado" });
-    }
-
-    const historial = await HistorialClinicoModel.getByGanado(id, id_usuario);
-    res.json({ data: historial });
-
-  } catch (e) {
-    res.status(500).json({ message: "Error obteniendo historial clínico" });
+    const historial = await HistorialClinicoService.getByGanado(id, id_usuario);
+    return res.json({ message: "Historial clínico obtenido correctamente", data: historial });
+  } catch (error) {
+    console.error("Error obteniendo historial clínico:", error);
+    return res.status(500).json({ message: error.message || "Error obteniendo historial clínico" });
   }
 };
 
@@ -23,98 +17,69 @@ export const getHistorialClinicoById = async (req, res) => {
   try {
     const id_usuario = req.user.id_usuario;
     const { id } = req.params;
-
-    const historial = await HistorialClinicoModel.getById(id);
-
-    // 1️⃣ No existe
-    if (!historial) {
-      return res.status(404).json({
-        message: "Historial clínico no encontrado"
-      });
-    }
-
-    // 2️⃣ Existe pero no es del usuario
-    if (historial.id_usuario !== id_usuario) {
-      return res.status(403).json({
-        message: "No autorizado para ver este historial clínico"
-      });
-    }
-
-    // 3️⃣ Todo OK
-    res.json({ data: historial });
-
-  } catch (e) {
-    res.status(500).json({
-      message: "Error interno del servidor"
-    });
+    const historial = await HistorialClinicoService.getById(id, id_usuario);
+    return res.json({ message: "Historial clínico obtenido correctamente", data: historial });
+  } catch (error) {
+    console.error("Error obteniendo historial clínico:", error);
+    const status = error.message.includes("no encontrado") ? 404 : 500;
+    return res.status(status).json({ message: error.message || "Error obteniendo historial clínico" });
   }
 };
-
-
 
 export const createHistorialClinico = async (req, res) => {
   try {
     const { id } = req.params;
     const id_usuario = req.user.id_usuario;
 
-    const ganado = await GanadoModel.getById(id);
-    if (!ganado || ganado.id_usuario !== id_usuario) {
-      return res.status(403).json({ message: "No autorizado" });
+    const validation = validateHistorialClinicoCreate(req.body);
+    if (!validation.success) {
+      const errors = validation.error.errors.map((err) => ({
+        field: err.path.join("."),
+        message: err.message
+      }));
+      return res.status(400).json({ message: "Error de validación", errors });
     }
 
-    const nuevo = await HistorialClinicoModel.create(
-      id,
-      req.body,
-      id_usuario
-    );
-
-    res.status(201).json({ data: nuevo });
-
-  } catch (e) {
-    res.status(500).json({ message: "Error creando historial clínico" });
+    const nuevo = await HistorialClinicoService.create(id, validation.data, id_usuario);
+    return res.status(201).json({ message: "Historial clínico creado correctamente", data: nuevo });
+  } catch (error) {
+    console.error("Error creando historial clínico:", error);
+    return res.status(400).json({ message: error.message || "Error creando historial clínico" });
   }
 };
 
-export const updateHistorialClinicoSeguimiento = async (req, res) => {
+export const updateHistorialClinico = async (req, res) => {
   try {
-    const actualizado = await HistorialClinicoModel.updateSeguimiento(
-      req.params.id,
-      req.body,
-      req.user.id_usuario
-    );
+    const { id } = req.params;
+    const id_usuario = req.user.id_usuario;
 
-    if (!actualizado) {
-      return res.status(403).json({ message: "No autorizado" });
+    const validation = validateHistorialClinicoUpdate(req.body);
+    if (!validation.success) {
+      const errors = validation.error.errors.map((err) => ({
+        field: err.path.join("."),
+        message: err.message
+      }));
+      return res.status(400).json({ message: "Error de validación", errors });
     }
 
-    res.json({ data: actualizado });
-
-  } catch (e) {
-    res.status(500).json({ message: "Error actualizando historial clínico" });
+    const actualizado = await HistorialClinicoService.update(id, validation.data, id_usuario);
+    return res.json({ message: "Historial clínico actualizado correctamente", data: actualizado });
+  } catch (error) {
+    console.error("Error actualizando historial clínico:", error);
+    const status = error.message.includes("no encontrado") ? 404 : 400;
+    return res.status(status).json({ message: error.message || "Error actualizando historial clínico" });
   }
 };
 
-export const updateHistorialClinicoCorreccion = async (req, res) => {
+export const deleteHistorialClinico = async (req, res) => {
   try {
-    const resultado = await HistorialClinicoModel.updateCorreccion(
-      req.params.id,
-      req.body,
-      req.user.id_usuario
-    );
-
-    if (resultado === "TIME_EXPIRED") {
-      return res.status(403).json({
-        message: "Este historial ya no puede modificarse"
-      });
-    }
-
-    if (!resultado) {
-      return res.status(403).json({ message: "No autorizado" });
-    }
-
-    res.json({ data: resultado });
-
-  } catch (e) {
-    res.status(500).json({ message: "Error actualizando historial clínico" });
+    const { id } = req.params;
+    const id_usuario = req.user.id_usuario;
+    const result = await HistorialClinicoService.delete(id, id_usuario);
+    return res.json({ message: "Historial clínico eliminado correctamente" });
+  } catch (error) {
+    console.error("Error eliminando historial clínico:", error);
+    const status = error.message.includes("no encontrado") ? 404 : 400;
+    return res.status(status).json({ message: error.message || "Error eliminando historial clínico" });
   }
 };

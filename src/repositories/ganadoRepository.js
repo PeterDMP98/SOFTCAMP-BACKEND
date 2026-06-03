@@ -1,9 +1,7 @@
 import pool from "../config/db.js";
 
-export const GanadoModel = {
-
-  // Obtener ganado del usuario autenticado
-  async getByUser(id_usuario) {
+export const GanadoRepository = {
+  async findByUser(id_usuario) {
     const query = `
       SELECT 
         id_ganado,
@@ -24,7 +22,7 @@ export const GanadoModel = {
     return rows;
   },
 
-  async getById(id_ganado) {
+  async findById(id_ganado) {
     const query = `
       SELECT 
         g.*,
@@ -37,8 +35,15 @@ export const GanadoModel = {
     return result.rows[0];
   },
 
+  async findByIdAndUser(id_ganado, id_usuario) {
+    const query = `
+      SELECT * FROM ganado 
+      WHERE id_ganado = $1 AND id_usuario = $2
+    `;
+    const result = await pool.query(query, [id_ganado, id_usuario]);
+    return result.rows[0];
+  },
 
-  // Crear registro de ganado
   async create(data, id_usuario) {
     const query = `
       INSERT INTO ganado (
@@ -55,9 +60,10 @@ export const GanadoModel = {
         subproducto,
         id_lote,
         precio,
-        id_usuario
+        id_usuario,
+        sync_status
       )
-      VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14)
+      VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15)
       RETURNING *
     `;
     const values = [
@@ -74,15 +80,30 @@ export const GanadoModel = {
       data.subproducto || null,
       data.id_lote || null,
       data.precio || null,
-      id_usuario
+      id_usuario,
+      false
     ];
-
     const { rows } = await pool.query(query, values);
     return rows[0];
   },
 
-  // Actualizar ganado solo si pertenece al usuario
   async update(id_ganado, data, id_usuario) {
+    const existing = await this.findByIdAndUser(id_ganado, id_usuario);
+    if (!existing) return null;
+
+    const mergedData = { ...existing, ...data };
+    
+    const fields = [
+      'nombre_animal', 'numero_identificacion', 'fecha_nacimiento',
+      'raza', 'sexo', 'peso_actual', 'estado_salud', 'estado_reproductivo',
+      'fecha_gestacion', 'detalle', 'subproducto', 'id_lote', 'precio'
+    ];
+    
+    const setClause = fields.map((field, i) => `$${field} = $${i + 1}`).join(', ');
+    const values = fields.map(field => mergedData[field] ?? null);
+    
+    values.push(true, id_ganado, id_usuario);
+    
     const query = `
       UPDATE ganado SET
         nombre_animal=$1,
@@ -97,33 +118,16 @@ export const GanadoModel = {
         detalle=$10,
         subproducto=$11,
         id_lote=$12,
-        precio=$13
-      WHERE id_ganado=$14 AND id_usuario=$15
+        precio=$13,
+        sync_status=$14
+      WHERE id_ganado=$15 AND id_usuario=$16
       RETURNING *
     `;
-    const values = [
-      data.nombre_animal,
-      data.numero_identificacion || null,
-      data.fecha_nacimiento || null,
-      data.raza || null,
-      data.sexo,
-      data.peso_actual || null,
-      data.estado_salud || null,
-      data.estado_reproductivo || null,
-      data.fecha_gestacion || null,
-      data.detalle || null,
-      data.subproducto || null,
-      data.id_lote || null,
-      data.precio || null,
-      id_ganado,
-      id_usuario
-    ];
-
+    
     const { rows } = await pool.query(query, values);
     return rows[0];
   },
 
-  // Eliminar ganado con validación de dueño
   async delete(id_ganado, id_usuario) {
     const query = `
       DELETE FROM ganado
@@ -131,11 +135,6 @@ export const GanadoModel = {
       RETURNING id_ganado
     `;
     const { rows } = await pool.query(query, [id_ganado, id_usuario]);
-
-    if (!rows.length) {
-      return { success: false, message: "No autorizado o no existe" };
-    }
-
-    return { success: true, message: "Ganado eliminado correctamente" };
+    return rows[0];
   }
 };

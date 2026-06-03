@@ -1,103 +1,101 @@
-import { LoteModel } from "../models/loteModel.js";
+import { LoteService } from "../services/loteService.js";
+import { validateLoteCreate, validateLoteUpdate } from "../validations/lote.validation.js";
 
 export const getLotes = async (req, res) => {
-	try {
-		const lotes = await LoteModel.getAllByUser(req.user.id_usuario);
-		res.json({ data: lotes });
-	} catch (e) {
-		res.status(500).json({ error: "Error al obtener los lotes" });
-	}
+  try {
+    const id_usuario = req.user.id_usuario;
+    const lotes = await LoteService.getAllByUser(id_usuario);
+    return res.json({ message: "Lotes obtenidos correctamente", data: lotes });
+  } catch (error) {
+    console.error("Error obteniendo lotes:", error);
+    return res.status(500).json({ message: error.message || "Error al obtener los lotes" });
+  }
 };
 
 export const getInactiveLotes = async (req, res) => {
-	try {
-		const lotes = await LoteModel.getInactiveByUser(req.user.id_usuario);
-		res.json({ data: lotes });
-	} catch (e) {
-		res.status(500).json({ error: "Error al obtener los lotes" });
-	}
+  try {
+    const id_usuario = req.user.id_usuario;
+    const lotes = await LoteService.getInactiveByUser(id_usuario);
+    return res.json({ message: "Lotes inactivos obtenidos correctamente", data: lotes });
+  } catch (error) {
+    console.error("Error obteniendo lotes inactivos:", error);
+    return res.status(500).json({ message: error.message || "Error al obtener los lotes" });
+  }
 };
 
 export const getLoteById = async (req, res) => {
-	try {
-		const lote = await LoteModel.getById(
-			req.params.id,
-			req.user.id_usuario
-		);
-
-
-		if (!lote) {
-			return res.status(404).json({ error: "Lote no encontrado" });
-		}
-
-		res.json({ data: lote });
-	} catch (e) {
-		res.status(500).json({ error: "Error al obtener el lote" });
-	}
+  try {
+    const id_usuario = req.user.id_usuario;
+    const lote = await LoteService.getById(req.params.id, id_usuario);
+    return res.json({ message: "Lote obtenido correctamente", data: lote });
+  } catch (error) {
+    console.error("Error obteniendo lote:", error);
+    const status = error.message.includes("no encontrado") ? 404 : 500;
+    return res.status(status).json({ message: error.message || "Error al obtener el lote" });
+  }
 };
 
 export const createLote = async (req, res) => {
-	try {
-		const lote = await LoteModel.create(req.body, req.user.id_usuario);
-		res.status(201).json({ data: lote });
-	} catch (e) {
-		res.status(500).json({ error: "Error al crear el lote" });
-	}
+  try {
+    const validation = validateLoteCreate(req.body);
+    if (!validation.success) {
+      const errors = validation.error.errors.map((err) => ({
+        field: err.path.join("."),
+        message: err.message
+      }));
+      return res.status(400).json({ message: "Error de validación", errors });
+    }
+
+    const id_usuario = req.user.id_usuario;
+    const lote = await LoteService.create(validation.data, id_usuario);
+    return res.status(201).json({ message: "Lote creado correctamente", data: lote });
+  } catch (error) {
+    console.error("Error creando lote:", error);
+    return res.status(400).json({ message: error.message || "Error al crear el lote" });
+  }
 };
 
 export const updateLote = async (req, res) => {
-	try {
-		const lote = await LoteModel.update(
-			req.params.id,
-			req.body,
-			req.user.id_usuario
-		);
+  try {
+    const validation = validateLoteUpdate(req.body);
+    if (!validation.success) {
+      const errors = validation.error.errors.map((err) => ({
+        field: err.path.join("."),
+        message: err.message
+      }));
+      return res.status(400).json({ message: "Error de validación", errors });
+    }
 
-		if (!lote) {
-			return res.status(404).json({ error: "Lote no encontrado" });
-		}
-
-		res.json({ data: lote });
-	} catch (e) {
-		res.status(500).json({ error: "Error al actualizar el lote" });
-	}
+    const id_usuario = req.user.id_usuario;
+    const lote = await LoteService.update(req.params.id, validation.data, id_usuario);
+    return res.json({ message: "Lote actualizado correctamente", data: lote });
+  } catch (error) {
+    console.error("Error actualizando lote:", error);
+    const status = error.message.includes("no encontrado") ? 404 : 400;
+    return res.status(status).json({ message: error.message || "Error al actualizar el lote" });
+  }
 };
 
 export const deactivateLote = async (req, res) => {
-	try {
-		const lote = await LoteModel.deactivate(
-			req.params.id,
-			req.user.id_usuario
-		);
-
-		if (!lote) {
-			return res.status(404).json({ error: "No autorizado o no existe" });
-		}
-
-		res.json({ message: "Lote dasactivado correctamente" });
-	} catch (e) {
-		res.status(500).json({ error: "Error al desactivar el lote" });
-	}
+  try {
+    const id_usuario = req.user.id_usuario;
+    const result = await LoteService.deactivate(req.params.id, id_usuario);
+    return res.json({ message: "Lote desactivado correctamente" });
+  } catch (error) {
+    console.error("Error desactivando lote:", error);
+    const status = error.message.includes("no encontrado") ? 404 : 400;
+    return res.status(status).json({ message: error.message || "Error al desactivar el lote" });
+  }
 };
 
 export const reactivateLote = async (req, res) => {
-	try {
-		const { id } = req.params;
-		const id_usuario = req.user.id_usuario;
-
-		const lote = await LoteModel.reactivate(id, id_usuario);
-
-		if (!lote) {
-			return res.status(404).json({ message: "Lote no encontrado" });
-		}
-
-		return res.json({
-			message: "Lote reactivado correctamente",
-			lote
-		});
-
-	} catch (error) {
-		console.error("❌ Error reactivando lote:", error);
-		return res.status(500).json({ message: "Error interno del servidor" });
-	}
+  try {
+    const id_usuario = req.user.id_usuario;
+    const result = await LoteService.reactivate(req.params.id, id_usuario);
+    return res.json({ message: "Lote reactivado correctamente" });
+  } catch (error) {
+    console.error("Error reactivando lote:", error);
+    const status = error.message.includes("no encontrado") ? 404 : 400;
+    return res.status(status).json({ message: error.message || "Error al activar el lote" });
+  }
 };

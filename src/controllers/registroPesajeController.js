@@ -1,26 +1,15 @@
-import { RegistroPesajeModel } from "../models/registroPesajeModel.js";
-import { GanadoModel } from "../models/ganadoModel.js";
+import { RegistroPesajeService } from "../services/registroPesajeService.js";
+import { validateRegistroPesajeCreate, validateRegistroPesajeUpdate } from "../validations/registroPesaje.validation.js";
 
 export const getPesajesByGanado = async (req, res) => {
   try {
-    const { id } = req.params; // id_ganado
+    const { id } = req.params;
     const id_usuario = req.user.id_usuario;
-    
-    const ganado = await GanadoModel.getById(id);
-    if (!ganado) {
-      return res.status(404).json({ message: "Ganado no encontrado" });
-    }
-
-    if (ganado.id_usuario !== id_usuario) {
-      return res.status(403).json({ message: "No autorizado" });
-    }
-
-    const pesajes = await RegistroPesajeModel.getByGanado(id);
-    res.json({ data: pesajes });
-
+    const pesajes = await RegistroPesajeService.getByGanado(id, id_usuario);
+    return res.json({ message: "Registros de pesaje obtenidos correctamente", data: pesajes });
   } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: "Error obteniendo registros de pesaje" });
+    console.error("Error obteniendo registros de pesaje:", error);
+    return res.status(500).json({ message: error.message || "Error obteniendo registros de pesaje" });
   }
 };
 
@@ -28,88 +17,69 @@ export const getPesajeById = async (req, res) => {
   try {
     const { id } = req.params;
     const id_usuario = req.user.id_usuario;
-
-    const pesaje = await RegistroPesajeModel.getById(id);
-
-    if (!pesaje) {
-      return res.status(404).json({ message: "Registro de pesaje no encontrado" });
-    }
-
-    if (pesaje.id_usuario !== id_usuario) {
-      return res.status(403).json({ message: "No autorizado" });
-    }
-
-    res.json({ data: pesaje });
-
+    const pesaje = await RegistroPesajeService.getById(id, id_usuario);
+    return res.json({ message: "Registro de pesaje obtenido correctamente", data: pesaje });
   } catch (error) {
-    res.status(500).json({ message: "Error obteniendo registro de pesaje" });
+    console.error("Error obteniendo registro de pesaje:", error);
+    const status = error.message.includes("no encontrado") ? 404 : 500;
+    return res.status(status).json({ message: error.message || "Error obteniendo registro de pesaje" });
   }
 };
 
 export const createPesaje = async (req, res) => {
   try {
-    const { id } = req.params; // id_ganado
+    const { id } = req.params;
     const id_usuario = req.user.id_usuario;
 
-    
-    if (req.body.peso <= 0) {
-      return res.status(400).json({ message: "Peso inválido" });
+    const validation = validateRegistroPesajeCreate(req.body);
+    if (!validation.success) {
+      const errors = validation.error.errors.map((err) => ({
+        field: err.path.join("."),
+        message: err.message
+      }));
+      return res.status(400).json({ message: "Error de validación", errors });
     }
 
-    const ganado = await GanadoModel.getById(id);
-    if (!ganado || ganado.id_usuario !== id_usuario) {
-      return res.status(403).json({ message: "No autorizado" });
-    }
-
-    const nuevo = await RegistroPesajeModel.create(id, req.body);
-    res.status(201).json({ data: nuevo });
-
+    const nuevo = await RegistroPesajeService.create(id, validation.data, id_usuario);
+    return res.status(201).json({ message: "Registro de pesaje creado correctamente", data: nuevo });
   } catch (error) {
-    res.status(500).json({ message: "Error creando registro de pesaje" });
+    console.error("Error creando registro de pesaje:", error);
+    return res.status(400).json({ message: error.message || "Error creando registro de pesaje" });
   }
 };
 
 export const updatePesaje = async (req, res) => {
   try {
-    const { id } = req.params; // id_registro_pesaje
+    const { id } = req.params;
     const id_usuario = req.user.id_usuario;
-    const { peso } = req.body;
 
-    if (!peso || peso <= 0) {
-      return res.status(400).json({ message: "Peso inválido" });
+    const validation = validateRegistroPesajeUpdate(req.body);
+    if (!validation.success) {
+      const errors = validation.error.errors.map((err) => ({
+        field: err.path.join("."),
+        message: err.message
+      }));
+      return res.status(400).json({ message: "Error de validación", errors });
     }
 
-    const pesaje = await RegistroPesajeModel.getById(id);
-
-    if (!pesaje) {
-      return res.status(404).json({ message: "Registro no encontrado" });
-    }
-
-    if (pesaje.id_usuario !== id_usuario) {
-      return res.status(403).json({ message: "No autorizado" });
-    }
-
-    // ⏱️ validar ventana de tiempo (1 hora)
-    const ahora = new Date();
-    const fechaRegistro = new Date(pesaje.fecha_registro);
-    const diffMs = ahora - fechaRegistro;
-    const unaHora = 60 * 60 * 1000;
-
-    if (diffMs > unaHora) {
-      return res.status(403).json({
-        message: "El registro ya no puede modificarse"
-      });
-    }
-
-    const actualizado = await RegistroPesajeModel.update(id, req.body);
-
-    res.json({
-      message: "Registro actualizado correctamente",
-      data: actualizado
-    });
-
+    const actualizado = await RegistroPesajeService.update(id, validation.data, id_usuario);
+    return res.json({ message: "Registro de pesaje actualizado correctamente", data: actualizado });
   } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: "Error actualizando registro de pesaje" });
+    console.error("Error actualizando registro de pesaje:", error);
+    const status = error.message.includes("no encontrado") ? 404 : 400;
+    return res.status(status).json({ message: error.message || "Error actualizando registro de pesaje" });
+  }
+};
+
+export const deletePesaje = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const id_usuario = req.user.id_usuario;
+    const result = await RegistroPesajeService.delete(id, id_usuario);
+    return res.json({ message: "Registro de pesaje eliminado correctamente" });
+  } catch (error) {
+    console.error("Error eliminando registro de pesaje:", error);
+    const status = error.message.includes("no encontrado") ? 404 : 400;
+    return res.status(status).json({ message: error.message || "Error eliminando registro de pesaje" });
   }
 };

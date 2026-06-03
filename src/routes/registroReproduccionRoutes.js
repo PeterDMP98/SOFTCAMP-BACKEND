@@ -1,13 +1,49 @@
-import express from 'express';
-import { getReproduccionByGanado, getReproduccionById, createReproduccion, deactivateReproduccion } from '../controllers/registroReproduccionController';
-import { auth } from '../middleware/authMiddleware.js';
+import { Router } from "express";
+import {
+  getReproduccionByGanado,
+  getReproduccionById,
+  createReproduccion,
+  updateReproduccion,
+  deleteReproduccion
+} from "../controllers/registroReproduccionController.js";
+import { authenticateToken, authorizeRoles } from "../middleware/authMiddleware.js";
 
-const router = express.Router();
+const router = Router();
+const rolesCampesinos = ["campesino_dueño", "campesino"];
 
-router.use(auth);
+router.get(
+  "/ganado/:id",
+  authenticateToken,
+  authorizeRoles(...rolesCampesinos),
+  getReproduccionByGanado
+);
 
-router.get('/ganado/:id', getReproduccionByGanado);
-router.get('/:id', getReproduccionById);
-router.post('/', createReproduccion);
-router.put('/:id', updateReproduccion);
+router.get(
+  "/:id",
+  authenticateToken,
+  authorizeRoles(...rolesCampesinos),
+  getReproduccionById
+);
 
+router.post(
+  "/",
+  authenticateToken,
+  authorizeRoles(...rolesCampesinos),
+  createReproduccion
+);
+
+router.put(
+  "/:id",
+  authenticateToken,
+  authorizeRoles(...rolesCampesinos),
+  updateReproduccion
+);
+
+router.delete(
+  "/:id",
+  authenticateToken,
+  authorizeRoles(...rolesCampesinos),
+  deleteReproduccion
+);
+
+export default router;
