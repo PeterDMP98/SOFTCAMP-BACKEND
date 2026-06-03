@@ -15,6 +15,7 @@ import tareaRoutes from "./tareaRoutes.js";
 import empleadoRoutes from "./empleadoRoutes.js";
 import rolesRoutes from "./rolesRoutes.js";
 import convenioRoutes from "./convenioRoutes.js";
+import iaRoutes from "./iaRoutes.js";
 
 export default function allRoutes(app) {
   
@@ -53,6 +54,9 @@ export default function allRoutes(app) {
 
   // Convenios
   app.use("/api/convenios", convenioRoutes);
+
+  // IA - Asistente conversacional y recomendaciones
+  app.use("/api/ia", iaRoutes);
 
   // Roles
   app.use("/api/roles", rolesRoutes);
