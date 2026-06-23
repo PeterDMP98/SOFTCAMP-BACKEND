@@ -1,5 +1,4 @@
 import { Router } from "express";
-import { RolesGrupoModel } from "../models/rolesGrupoModel.js";
 
 import {
   getRoles,

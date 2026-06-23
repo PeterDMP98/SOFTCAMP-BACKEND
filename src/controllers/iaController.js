@@ -5,6 +5,12 @@ import {
   validateRecomendacion,
   validateGenerateTask,
 } from "../validations/ia.validation.js";
+import {
+  ChatIAListDTO,
+  RecomendacionResponseDTO,
+  TareaGeneradaResponseDTO,
+} from "../dtos/index.js";
+import { mapListToDto, mapToDto } from "../utils/dtoMapper.js";
 
 export const iaController = {
   // CHAT ENDPOINTS
@@ -53,7 +59,8 @@ export const iaController = {
       const { limit = 20, offset = 0 } = req.query;
 
       const chats = await iaService.obtenerMisChats(id_usuario, parseInt(limit), parseInt(offset));
-      res.status(200).json(chats);
+      const list = Array.isArray(chats) ? chats : chats?.data ?? [];
+      res.status(200).json(mapListToDto(ChatIAListDTO, list));
     } catch (error) {
       res.status(400).json({ error: error.message });
     }
@@ -110,7 +117,8 @@ export const iaController = {
         id_usuario,
         solo_pendientes === "true"
       );
-      res.status(200).json(recomendaciones);
+      const list = Array.isArray(recomendaciones) ? recomendaciones : recomendaciones?.data ?? [];
+      res.status(200).json(mapListToDto(RecomendacionResponseDTO, list));
     } catch (error) {
       res.status(400).json({ error: error.message });
     }
@@ -153,7 +161,7 @@ export const iaController = {
         id_usuario,
         parseInt(id_recomendacion)
       );
-      res.status(201).json(tarea);
+      res.status(201).json(mapToDto(TareaGeneradaResponseDTO, tarea));
     } catch (error) {
       res.status(400).json({ error: error.message });
     }
@@ -164,7 +172,8 @@ export const iaController = {
       const id_usuario = req.user.id_usuario;
 
       const tareas = await iaService.obtenerMisTareasGeneradas(id_usuario);
-      res.status(200).json(tareas);
+      const list = Array.isArray(tareas) ? tareas : tareas?.data ?? [];
+      res.status(200).json(mapListToDto(TareaGeneradaResponseDTO, list));
     } catch (error) {
       res.status(400).json({ error: error.message });
     }

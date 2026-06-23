@@ -76,7 +76,9 @@ export class UsuarioResponseDTO extends BaseDTO {
     this.direccion = userData.direccion;
     this.estado = userData.estado;
     this.fecha_registro = userData.fecha_registro;
+    this.id_rol = userData.id_rol;
     this.rol = userData.rol;
+    this.id_grupo = userData.id_grupo;
     this.grupo = userData.grupo;
   }
 }

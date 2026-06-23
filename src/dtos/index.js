@@ -104,12 +104,7 @@ export {
 } from './empleado.dto.js';
 
 // Convenio
-export {
-  CreateConvenioDTO,
-  UpdateConvenioDTO,
-  ConvenioResponseDTO,
-  ConvenioListDTO
-} from './convenio.dto.js';
+export { ConvenioResponseDTO, ConvenioListDTO } from './convenio.dto.js';
 
 // Historial Clínico
 export {

@@ -44,15 +44,8 @@ export class UpdateHistorialClinicoDTO extends BaseDTO {
 export class HistorialClinicoResponseDTO extends BaseDTO {
   constructor(hcData) {
     super();
-    this.id_historial = hcData.id_historial;
-    this.id_ganado = hcData.id_ganado;
-    this.nombre_animal = hcData.nombre_animal;
-    this.fecha_consulta = hcData.fecha_consulta;
-    this.tipo_enfermedad = hcData.tipo_enfermedad;
-    this.diagnostico = hcData.diagnostico;
-    this.tratamiento = hcData.tratamiento;
-    this.medicamentos = hcData.medicamentos;
-    this.notas_adicionales = hcData.notas_adicionales;
+    const { id_usuario, contrasena, ...rest } = hcData || {};
+    Object.assign(this, rest);
   }
 }
 
@@ -62,10 +55,7 @@ export class HistorialClinicoResponseDTO extends BaseDTO {
 export class HistorialClinicoListDTO extends BaseDTO {
   constructor(hcData) {
     super();
-    this.id_historial = hcData.id_historial;
-    this.nombre_animal = hcData.nombre_animal;
-    this.fecha_consulta = hcData.fecha_consulta;
-    this.tipo_enfermedad = hcData.tipo_enfermedad;
-    this.diagnostico = hcData.diagnostico;
+    const { id_usuario, contrasena, ...rest } = hcData || {};
+    Object.assign(this, rest);
   }
 }

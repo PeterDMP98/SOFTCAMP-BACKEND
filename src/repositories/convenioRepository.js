@@ -6,8 +6,17 @@ export const ConvenioRepository = {
     const { rows } = await pool.query(query, [id_usuario_campesino]);
     return rows;
   },
+  findByComprador: async (id_usuario_comprador) => {
+    const query = `SELECT c.*, u.nombre as campesino_nombre FROM convenio c JOIN usuario u ON c.id_usuario_campesino = u.id_usuario WHERE c.id_usuario_comprador = $1 ORDER BY c.fecha_creacion DESC`;
+    const { rows } = await pool.query(query, [id_usuario_comprador]);
+    return rows;
+  },
   findById: async (id_convenio) => {
-    const query = `SELECT c.*, u.nombre as comprador_nombre FROM convenio c JOIN usuario u ON c.id_usuario_comprador = u.id_usuario WHERE c.id_convenio = $1`;
+    const query = `SELECT c.*, uc.nombre as comprador_nombre, ucp.nombre as campesino_nombre
+      FROM convenio c
+      JOIN usuario uc ON c.id_usuario_comprador = uc.id_usuario
+      JOIN usuario ucp ON c.id_usuario_campesino = ucp.id_usuario
+      WHERE c.id_convenio = $1`;
     const { rows } = await pool.query(query, [id_convenio]);
     return rows[0];
   },
@@ -25,7 +34,7 @@ export const ConvenioRepository = {
     const existing = await this.findByIdAndUser(id_convenio, id_usuario);
     if (!existing) return null;
     const merged = { ...existing, ...data };
-    const query = `UPDATE SET descuento=$1, detalle_de_contrato=$2, fecha_fin=$3, estado=$4, sync_status=$5 WHERE id_convenio=$6 RETURNING *`;
+    const query = `UPDATE convenio SET descuento=$1, detalle_de_contrato=$2, fecha_fin=$3, estado=$4, sync_status=$5 WHERE id_convenio=$6 RETURNING *`;
     const { rows } = await pool.query(query, [merged.descuento, merged.detalle_de_contrato, merged.fecha_fin, merged.estado, true, id_convenio]);
     return rows[0];
   },

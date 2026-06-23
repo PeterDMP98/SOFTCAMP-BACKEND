@@ -1,11 +1,11 @@
 import express from "express";
 import { iaController } from "../controllers/iaController.js";
-import { authMiddleware } from "../middleware/authMiddleware.js";
+import { authenticateToken } from "../middleware/authMiddleware.js";
 
 const router = express.Router();
 
 // Todos los endpoints requieren autenticación
-router.use(authMiddleware);
+router.use(authenticateToken);
 
 // CHAT ENDPOINTS
 router.post("/chat", iaController.enviarMensaje); // Enviar mensaje (crea chat si es nuevo)

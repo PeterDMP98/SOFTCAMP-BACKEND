@@ -60,10 +60,7 @@ export class ChatIAResponseDTO extends BaseDTO {
 export class ChatIAListDTO extends BaseDTO {
   constructor(chatData) {
     super();
-    this.id_chat = chatData.id_chat;
-    this.titulo = chatData.titulo;
-    this.fecha_creacion = chatData.fecha_creacion;
-    this.ultima_actualizacion = chatData.ultima_actualizacion;
+    Object.assign(this, chatData || {});
   }
 }
 
@@ -87,15 +84,7 @@ export class CreateRecomendacionDTO extends BaseDTO {
 export class RecomendacionResponseDTO extends BaseDTO {
   constructor(recData) {
     super();
-    this.id_recomendacion = recData.id_recomendacion;
-    this.id_chat = recData.id_chat;
-    this.tipo = recData.tipo;
-    this.titulo = recData.titulo;
-    this.descripcion = recData.descripcion;
-    this.confianza = recData.confianza;
-    this.aceptada = recData.aceptada;
-    this.descartada = recData.descartada;
-    this.fecha_creacion = recData.fecha_creacion;
+    Object.assign(this, recData || {});
   }
 }
 
@@ -132,14 +121,7 @@ export class TareaIADTO extends BaseDTO {
 export class TareaGeneradaResponseDTO extends BaseDTO {
   constructor(tareaData) {
     super();
-    this.id_tarea = tareaData.id_tarea;
-    this.id_recomendacion = tareaData.id_recomendacion;
-    this.titulo = tareaData.titulo;
-    this.descripcion = tareaData.descripcion;
-    this.tipo = tareaData.tipo;
-    this.prioridad = tareaData.prioridad;
-    this.estado = tareaData.estado;
-    this.fecha_vencimiento = tareaData.fecha_vencimiento;
+    Object.assign(this, tareaData || {});
   }
 }
 

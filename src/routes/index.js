@@ -16,6 +16,7 @@ import empleadoRoutes from "./empleadoRoutes.js";
 import rolesRoutes from "./rolesRoutes.js";
 import convenioRoutes from "./convenioRoutes.js";
 import iaRoutes from "./iaRoutes.js";
+import syncRoutes from "./syncRoutes.js";
 
 export default function allRoutes(app) {
   
@@ -57,6 +58,9 @@ export default function allRoutes(app) {
 
   // IA - Asistente conversacional y recomendaciones
   app.use("/api/ia", iaRoutes);
+
+  // Sincronización offline-first
+  app.use("/api/sync", syncRoutes);
 
   // Roles
   app.use("/api/roles", rolesRoutes);
