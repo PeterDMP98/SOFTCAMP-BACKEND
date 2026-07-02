@@ -40,8 +40,15 @@ export class UpdateRegistroReproduccionDTO extends BaseDTO {
 export class RegistroReproduccionResponseDTO extends BaseDTO {
   constructor(rrData) {
     super();
-    const { id_usuario, contrasena, ...rest } = rrData || {};
-    Object.assign(this, rest);
+    this.id_reproduccion = rrData.id_registros_reproduccion;
+    this.id_madre = rrData.id_madre;
+    this.id_padre = rrData.id_padre;
+    this.tipo = rrData.tipo_servicio;
+    this.fecha = rrData.fecha_evento;
+    this.resultado = rrData.estado_reproduccion;
+    this.notas = rrData.detalles;
+    this.madre_nombre = rrData.madre_nombre;
+    this.padre_nombre = rrData.padre_nombre;
   }
 }
 
@@ -51,8 +58,15 @@ export class RegistroReproduccionResponseDTO extends BaseDTO {
 export class RegistroReproduccionListDTO extends BaseDTO {
   constructor(rrData) {
     super();
-    const { id_usuario, contrasena, ...rest } = rrData || {};
-    Object.assign(this, rest);
+    this.id_reproduccion = rrData.id_registros_reproduccion;
+    this.id_madre = rrData.id_madre;
+    this.id_padre = rrData.id_padre;
+    this.tipo = rrData.tipo_servicio;
+    this.fecha = rrData.fecha_evento;
+    this.resultado = rrData.estado_reproduccion;
+    this.notas = rrData.detalles;
+    this.madre_nombre = rrData.madre_nombre;
+    this.padre_nombre = rrData.padre_nombre;
   }
 }
 

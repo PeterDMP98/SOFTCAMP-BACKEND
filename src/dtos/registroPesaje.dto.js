@@ -37,8 +37,13 @@ export class UpdateRegistroPesajeDTO extends BaseDTO {
 export class RegistroPesajeResponseDTO extends BaseDTO {
   constructor(rpData) {
     super();
-    const { id_usuario, contrasena, ...rest } = rpData || {};
-    Object.assign(this, rest);
+    this.id_pesaje = rpData.id_registros_pesajes;
+    this.id_ganado = rpData.id_ganado;
+    this.peso_kg = rpData.peso;
+    this.fecha_pesaje = rpData.fecha_registro;
+    this.notas = rpData.observaciones;
+    this.ganado_nombre = rpData.ganado_nombre;
+    this.ganado_identificacion = rpData.ganado_identificacion;
   }
 }
 
@@ -48,8 +53,13 @@ export class RegistroPesajeResponseDTO extends BaseDTO {
 export class RegistroPesajeListDTO extends BaseDTO {
   constructor(rpData) {
     super();
-    const { id_usuario, contrasena, ...rest } = rpData || {};
-    Object.assign(this, rest);
+    this.id_pesaje = rpData.id_registros_pesajes;
+    this.id_ganado = rpData.id_ganado;
+    this.peso_kg = rpData.peso;
+    this.fecha_pesaje = rpData.fecha_registro;
+    this.notas = rpData.observaciones;
+    this.ganado_nombre = rpData.ganado_nombre;
+    this.ganado_identificacion = rpData.ganado_identificacion;
   }
 }
 

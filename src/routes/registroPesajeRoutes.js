@@ -1,5 +1,6 @@
 import { Router } from "express";
 import {
+  getAllPesajes,
   getPesajesByGanado,
   getPesajeById,
   createPesaje,
@@ -10,6 +11,13 @@ import { authenticateToken, authorizeRoles } from "../middleware/authMiddleware.
 
 const router = Router();
 const rolesCampesinos = ["campesino_dueño", "campesino"];
+
+router.get(
+  "/",
+  authenticateToken,
+  authorizeRoles(...rolesCampesinos),
+  getAllPesajes
+);
 
 router.get(
   "/ganado/:id",

@@ -2,6 +2,10 @@ import { RegistroPesajeRepository } from "../repositories/registroPesajeReposito
 import { GanadoRepository } from "../repositories/ganadoRepository.js";
 
 export const RegistroPesajeService = {
+  async getAllByUser(id_usuario) {
+    return await RegistroPesajeRepository.findByUser(id_usuario);
+  },
+
   async getByGanado(id_ganado, id_usuario) {
     const ganado = await GanadoRepository.findByIdAndUser(id_ganado, id_usuario);
     if (!ganado) throw new Error("Ganado no encontrado o no autorizado");

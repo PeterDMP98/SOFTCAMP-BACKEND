@@ -1,6 +1,18 @@
 import pool from "../config/db.js";
 
 export const RegistroPesajeRepository = {
+  async findByUser(id_usuario) {
+    const query = `
+      SELECT rp.*, g.nombre_animal as ganado_nombre, g.numero_identificacion as ganado_identificacion
+      FROM registros_pesajes rp
+      JOIN ganado g ON g.id_ganado = rp.id_ganado
+      WHERE g.id_usuario = $1
+      ORDER BY rp.fecha_registro DESC
+    `;
+    const { rows } = await pool.query(query, [id_usuario]);
+    return rows;
+  },
+
   async findByGanado(id_ganado) {
     const query = `SELECT * FROM registros_pesajes WHERE id_ganado = $1 ORDER BY fecha_registro DESC`;
     const { rows } = await pool.query(query, [id_ganado]);

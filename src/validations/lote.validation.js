@@ -6,7 +6,7 @@ export const loteCreateSchema = z.object({
     .min(1, "El nombre es requerido")
     .max(100, "El nombre no puede exceder 100 caracteres"),
   tamano_hectareas: z
-    .number()
+    .coerce.number()
     .positive("El tamaño debe ser mayor a 0")
     .optional()
     .nullable(),
@@ -24,7 +24,7 @@ export const loteUpdateSchema = z.object({
     .max(100, "El nombre no puede exceder 100 caracteres")
     .optional(),
   tamano_hectareas: z
-    .number()
+    .coerce.number()
     .positive("El tamaño debe ser mayor a 0")
     .optional()
     .nullable(),

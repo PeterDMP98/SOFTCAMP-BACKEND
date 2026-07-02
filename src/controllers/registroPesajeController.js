@@ -3,6 +3,19 @@ import { validateRegistroPesajeCreate, validateRegistroPesajeUpdate } from "../v
 import { RegistroPesajeResponseDTO, RegistroPesajeListDTO } from "../dtos/index.js";
 import { mapToDto, mapListToDto } from "../utils/dtoMapper.js";
 
+export const getAllPesajes = async (req, res) => {
+  try {
+    const pesajes = await RegistroPesajeService.getAllByUser(req.user.id_usuario);
+    return res.json({
+      message: "Registros de pesaje obtenidos correctamente",
+      data: mapListToDto(RegistroPesajeListDTO, pesajes),
+    });
+  } catch (error) {
+    console.error("Error obteniendo registros de pesaje:", error);
+    return res.status(500).json({ message: error.message || "Error obteniendo registros de pesaje" });
+  }
+};
+
 export const getPesajesByGanado = async (req, res) => {
   try {
     const pesajes = await RegistroPesajeService.getByGanado(req.params.id, req.user.id_usuario);

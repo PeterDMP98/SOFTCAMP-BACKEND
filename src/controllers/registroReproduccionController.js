@@ -3,6 +3,19 @@ import { validateRegistroReproduccionCreate, validateRegistroReproduccionUpdate 
 import { RegistroReproduccionResponseDTO, RegistroReproduccionListDTO } from "../dtos/index.js";
 import { mapToDto, mapListToDto } from "../utils/dtoMapper.js";
 
+export const getAllReproducciones = async (req, res) => {
+  try {
+    const registros = await RegistroReproduccionService.getAllByUser(req.user.id_usuario);
+    return res.json({
+      message: "Registros de reproducción obtenidos correctamente",
+      data: mapListToDto(RegistroReproduccionListDTO, registros),
+    });
+  } catch (error) {
+    console.error("Error obteniendo registros de reproducción:", error);
+    return res.status(500).json({ message: error.message || "Error obteniendo registros de reproducción" });
+  }
+};
+
 export const getReproduccionByGanado = async (req, res) => {
   try {
     const registros = await RegistroReproduccionService.getByGanado(req.params.id, req.user.id_usuario);

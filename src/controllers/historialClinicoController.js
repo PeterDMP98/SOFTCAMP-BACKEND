@@ -3,6 +3,19 @@ import { validateHistorialClinicoCreate, validateHistorialClinicoUpdate } from "
 import { HistorialClinicoResponseDTO, HistorialClinicoListDTO } from "../dtos/index.js";
 import { mapToDto, mapListToDto } from "../utils/dtoMapper.js";
 
+export const getAllHistorialClinico = async (req, res) => {
+  try {
+    const historial = await HistorialClinicoService.getAllByUser(req.user.id_usuario);
+    return res.json({
+      message: "Historial clínico obtenido correctamente",
+      data: mapListToDto(HistorialClinicoListDTO, historial),
+    });
+  } catch (error) {
+    console.error("Error obteniendo historial clínico:", error);
+    return res.status(500).json({ message: error.message || "Error obteniendo historial clínico" });
+  }
+};
+
 export const getHistorialClinicoByGanado = async (req, res) => {
   try {
     const { id } = req.params;

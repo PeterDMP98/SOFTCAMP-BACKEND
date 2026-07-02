@@ -7,8 +7,8 @@ export const siembraCreateSchema = z.object({
   fecha_de_siembra: z.string().or(z.date()),
   fecha_de_cosecha: z.string().or(z.date()).optional().nullable(),
   estado: estadoEnum.optional(),
-  cantidad: z.number().positive("La cantidad debe ser mayor a 0").optional().nullable(),
-  id_lote: z.number().int().positive().optional().nullable()
+  cantidad: z    .coerce.number().positive("La cantidad debe ser mayor a 0").optional().nullable(),
+  id_lote: z    .coerce.number().int().positive().optional().nullable()
 });
 
 export const siembraUpdateSchema = z.object({
@@ -16,8 +16,8 @@ export const siembraUpdateSchema = z.object({
   fecha_de_siembra: z.string().or(z.date()).optional(),
   fecha_de_cosecha: z.string().or(z.date()).optional().nullable(),
   estado: estadoEnum.optional(),
-  cantidad: z.number().positive().optional().nullable(),
-  id_lote: z.number().int().positive().optional().nullable()
+  cantidad: z    .coerce.number().positive().optional().nullable(),
+  id_lote: z    .coerce.number().int().positive().optional().nullable()
 });
 
 export const validateSiembraCreate = (data) => siembraCreateSchema.safeParse(data);

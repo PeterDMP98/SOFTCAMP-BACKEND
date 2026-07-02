@@ -2,6 +2,10 @@ import { HistorialClinicoRepository } from "../repositories/historialClinicoRepo
 import { GanadoRepository } from "../repositories/ganadoRepository.js";
 
 export const HistorialClinicoService = {
+  async getAllByUser(id_usuario) {
+    return await HistorialClinicoRepository.findByUser(id_usuario);
+  },
+
   async getByGanado(id_ganado, id_usuario) {
     const ganado = await GanadoRepository.findByIdAndUser(id_ganado, id_usuario);
     if (!ganado) {

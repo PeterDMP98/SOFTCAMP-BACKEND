@@ -13,7 +13,7 @@ export class CreateGanadoDTO extends BaseDTO {
     this.raza = data.raza || null;
     this.sexo = data.sexo;
     this.peso_actual = data.peso_actual || null;
-    this.estado_salud = data.estado_salud || 'sano';
+    this.estado_salud = data.estado_salud || 'SANO';
     this.estado_reproductivo = data.estado_reproductivo || null;
     this.fecha_gestacion = data.fecha_gestacion || null;
     this.detalle = data.detalle || null;
@@ -99,6 +99,7 @@ export class GanadoListDTO extends BaseDTO {
     super();
     this.id_ganado = ganadoData.id_ganado;
     this.nombre_animal = ganadoData.nombre_animal;
+    this.numero_identificacion = ganadoData.numero_identificacion;
     this.raza = ganadoData.raza;
     this.sexo = ganadoData.sexo;
     this.estado_salud = ganadoData.estado_salud;

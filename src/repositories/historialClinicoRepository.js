@@ -1,6 +1,18 @@
 import pool from "../config/db.js";
 
 export const HistorialClinicoRepository = {
+  async findByUser(id_usuario) {
+    const query = `
+      SELECT hc.*, g.nombre_animal as ganado_nombre, g.numero_identificacion as ganado_identificacion
+      FROM historial_clinico hc
+      JOIN ganado g ON g.id_ganado = hc.id_ganado
+      WHERE g.id_usuario = $1
+      ORDER BY hc.fecha_de_registro DESC
+    `;
+    const { rows } = await pool.query(query, [id_usuario]);
+    return rows;
+  },
+
   async findByGanado(id_ganado, id_usuario) {
     const query = `
       SELECT hc.*

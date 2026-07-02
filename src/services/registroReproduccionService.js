@@ -5,6 +5,10 @@ const ESTADOS_VALIDOS = ['SERVICIO_REALIZADO', 'GESTACION_CONFIRMADA', 'PARTO_EX
 const TIPOS_SERVICIO = ['MONTA_NATURAL', 'INSEMINACION_ARTIFICIAL'];
 
 export const RegistroReproduccionService = {
+  async getAllByUser(id_usuario) {
+    return await RegistroReproduccionRepository.findByUser(id_usuario);
+  },
+
   async getByGanado(id_ganado, id_usuario) {
     const ganado = await GanadoRepository.findByIdAndUser(id_ganado, id_usuario);
     if (!ganado) throw new Error("Ganado no encontrado o no autorizado");

@@ -11,7 +11,7 @@ export const tareaCreateSchema = z.object({
   fecha_limite: z.string().or(z.date()).optional().nullable(),
   recordatorio: z.string().or(z.date()).optional().nullable(),
   tipo_referencia: z.string().max(50).optional().nullable(),
-  id_referencia: z.number().int().optional().nullable()
+  id_referencia: z    .coerce.number().int().optional().nullable()
 });
 
 export const tareaUpdateSchema = tareaCreateSchema.partial();

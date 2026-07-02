@@ -1,6 +1,19 @@
 import pool from "../config/db.js";
 
 export const RegistroReproduccionRepository = {
+  async findByUser(id_usuario) {
+    const query = `
+      SELECT rr.*, gm.nombre_animal as madre_nombre, gp.nombre_animal as padre_nombre
+      FROM registros_reproduccion rr
+      JOIN ganado gm ON gm.id_ganado = rr.id_madre
+      LEFT JOIN ganado gp ON gp.id_ganado = rr.id_padre
+      WHERE gm.id_usuario = $1
+      ORDER BY rr.fecha_evento DESC
+    `;
+    const { rows } = await pool.query(query, [id_usuario]);
+    return rows;
+  },
+
   async findByGanado(id_ganado) {
     const query = `
       SELECT * FROM registros_reproduccion 

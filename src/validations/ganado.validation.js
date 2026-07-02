@@ -26,7 +26,7 @@ export const ganadoCreateSchema = z.object({
     .nullable(),
   sexo: sexoEnum,
   peso_actual: z
-    .number()
+    .coerce.number()
     .min(0, "El peso no puede ser negativo")
     .optional()
     .nullable(),
@@ -43,19 +43,19 @@ export const ganadoCreateSchema = z.object({
     .optional()
     .nullable(),
   subproducto: z
-    .number()
+    .coerce.number()
     .int("Debe ser un número entero")
     .positive("Debe ser un ID válido")
     .optional()
     .nullable(),
   id_lote: z
-    .number()
+    .coerce.number()
     .int("Debe ser un número entero")
     .positive("Debe ser un ID válido")
     .optional()
     .nullable(),
   precio: z
-    .number()
+    .coerce.number()
     .min(0, "El precio no puede ser negativo")
     .optional()
     .nullable()
@@ -84,7 +84,7 @@ export const ganadoUpdateSchema = z.object({
     .nullable(),
   sexo: sexoEnum.optional(),
   peso_actual: z
-    .number()
+    .coerce.number()
     .min(0, "El peso no puede ser negativo")
     .optional()
     .nullable(),
@@ -101,19 +101,19 @@ export const ganadoUpdateSchema = z.object({
     .optional()
     .nullable(),
   subproducto: z
-    .number()
+    .coerce.number()
     .int("Debe ser un número entero")
     .positive("Debe ser un ID válido")
     .optional()
     .nullable(),
   id_lote: z
-    .number()
+    .coerce.number()
     .int("Debe ser un número entero")
     .positive("Debe ser un ID válido")
     .optional()
     .nullable(),
   precio: z
-    .number()
+    .coerce.number()
     .min(0, "El precio no puede ser negativo")
     .optional()
     .nullable()
